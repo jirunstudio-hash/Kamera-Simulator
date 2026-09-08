@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Kontrol Live Stream</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .btn-control {
+            background-color: #007bff;
+        }
+        .btn-control:hover {
+            background-color: #0056b3;
+        }
+        .btn-display {
+            background-color: #28a745;
+        }
+        .btn-display:hover {
+            background-color: #1e7e34;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard Control & Display</h1>
+        <div class="btn-group">
+            <a href="control.html" target="_blank" class="btn btn-control">Buka Web 1 (Control)</a>
+            <a href="display.html" target="_blank" class="btn btn-display">Buka Web 2 (Display)</a>
+        </div>
+    </div>
+</body>
+</html>
