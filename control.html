@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web 1 - Control Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #181818;
+            color: #fff;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+        }
+        .panel {
+            background-color: #242424;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+        h2 {
+            margin-top: 0;
+            color: #00d2d3;
+            font-size: 18px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #ccc;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #121212;
+            color: #fff;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff4757;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background-color: #ff6b81;
+        }
+        .btn-update {
+            background-color: #2ed573;
+        }
+        .btn-update:hover {
+            background-color: #26af5f;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SETTING HOST -->
+    <div class="panel">
+        <h2>1. Pengaturan Host</h2>
+        <div class="form-group">
+            <label>Pilih Slot Kotak (1 - 8):</label>
+            <select id="hostSlot">
+                <option value="0">Kotak 1 (Kiri Top)</option>
+                <option value="1">Kotak 2 (Kiri 2)</option>
+                <option value="2">Kotak 3 (Kiri 3)</option>
+                <option value="3">Kotak 4 (Kiri Bottom)</option>
+                <option value="4">Kotak 5 (Kanan Top)</option>
+                <option value="5">Kotak 6 (Kanan 2)</option>
+                <option value="6">Kotak 7 (Kanan 3)</option>
+                <option value="7">Kotak 8 (Kanan Bottom)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Masukkan Nama Host:</label>
+            <input type="text" id="hostName" placeholder="Contoh: Alex">
+        </div>
+        <div class="form-group">
+            <label>Upload / URL Video Host:</label>
+            <input type="file" id="hostVideoFile" accept="video/*">
+            <input type="text" id="hostVideoUrl" placeholder="Atau paste URL Video (.mp4)" style="margin-top: 5px;">
+        </div>
+        <button class="btn-update" onclick="updateHost()">Set Host</button>
+    </div>
+
+    <!-- PENGIRIMAN ANIMASI & POIN -->
+    <div class="panel">
+        <h2>2. Pengiriman Animasi & Poin</h2>
+        <div class="form-group">
+            <label>Masukkan Username Target:</label>
+            <input type="text" id="targetUsername" placeholder="Contoh: Alex">
+        </div>
+        <div class="form-group">
+            <label>Upload / URL Video Animasi (Gift):</label>
+            <input type="file" id="animFile" accept="video/*">
+            <input type="text" id="animUrl" placeholder="Atau paste URL Video Animasi (.mp4)" style="margin-top: 5px;">
+        </div>
+        <div class="form-group">
+            <label>Jumlah Poin yang Ditambahkan:</label>
+            <input type="number" id="addPoints" placeholder="Contoh: 100" value="100">
+        </div>
+        <button onclick="sendGift()">Kirim Animasi & Poin</button>
+    </div>
+
+    <script>
+        const channel = new BroadcastChannel('live_stream_control');
+
+        // Fungsi mengubah File ke Base64 / Blob URL
+        function getMediaSrc(fileInput, urlInput) {
+            if (fileInput.files && fileInput.files[0]) {
+                return URL.createObjectURL(fileInput.files[0]);
+            }
+            return urlInput.value.trim();
+        }
+
+        function updateHost() {
+            const slotIndex = document.getElementById('hostSlot').value;
+            const name = document.getElementById('hostName').value;
+            const videoSrc = getMediaSrc(
+                document.getElementById('hostVideoFile'),
+                document.getElementById('hostVideoUrl')
+            );
+
+            if (!name && !videoSrc) {
+                alert('Masukkan nama atau video host terlebih dahulu!');
+                return;
+            }
+
+            channel.postMessage({
+                type: 'UPDATE_HOST',
+                data: { slotIndex, name, videoSrc }
+            });
+
+            alert('Data Host dikirim ke Web 2!');
+        }
+
+        function sendGift() {
+            const targetUsername = document.getElementById('targetUsername').value.trim();
+            const points = parseInt(document.getElementById('addPoints').value) || 0;
+            const animSrc = getMediaSrc(
+                document.getElementById('animFile'),
+                document.getElementById('animUrl')
+            );
+
+            if (!targetUsername) {
+                alert('Masukkan Username Target!');
+                return;
+            }
+
+            channel.postMessage({
+                type: 'TRIGGER_GIFT',
+                data: { targetUsername, points, animSrc }
+            });
+
+            alert(`Gift & ${points} poin dikirim ke ${targetUsername}!`);
+        }
+    </script>
+</body>
+</html>
