@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web 2 - Display Live Stream</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Container Tata Letak Sesuai Foto */
+        .stream-container {
+            display: flex;
+            justify-content: space-between;
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 120px; /* Ukuran kotak disesuaikan */
+            gap: 15px;
+        }
+
+        .box {
+            width: 100%;
+            height: 130px;
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .box video.host-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .placeholder-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #888;
+            z-index: 2;
+        }
+
+        .plus-icon {
+            font-size: 28px;
+            font-weight: 300;
+            margin-bottom: 5px;
+        }
+
+        .label {
+            font-size: 12px;
+        }
+
+        /* Overlay Informasi Nama & Poin Host */
+        .info-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px;
+            text-align: center;
+            z-index: 3;
+            display: none;
+        }
+
+        .host-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .points-badge {
+            font-size: 10px;
+            color: #ffd700;
+        }
+
+        /* Video Animasi Gift Overlay di Tengah Layar */
+        #giftOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99;
+        }
+
+        #giftVideo {
+            max-width: 80%;
+            max-height: 80%;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stream-container">
+        <!-- Kolom Kiri (4 Kotak) -->
+        <div class="column">
+            <div class="box" id="slot-0"><div class="placeholder-content"><span class="plus-icon">+</span><span class="label">Permintaan</span></div><video class="host-video" autoplay loop muted></video><div class="info-overlay"><div class="host-name"></div><div class="points-badge">0 Poin</div></div></div>
+            <div class="box" id="slot-1"><div class="placeholder-content"><span class="plus-icon">+</span><span class="label">Permintaan</span></div><video class="host-video" autoplay loop muted></video><div class="info-overlay"><div class="host-name"></div><div class="points-badge">0 Poin</div></div></div>
+            <div class="box" id="slot-2"><div class="placeholder-content"><span class="plus-icon">+</span><span class="label">Permintaan</span></div><video class="host-video" autoplay loop muted></video><div class="info-overlay"><div class="host-name"></div><div class="points-badge">0 Poin</div></div></div>
+            <div class="box" id="slot-3"><div class="placeholder-content"><span class="plus-icon">+</span><span class="label">Permintaan</span></div><video class="host-video" autoplay loop muted></video><div class="info-overlay"><div class="host-name"></div><div class="points-badge">0 Poin</div></div></div>
+        </div>
+
+        <!-- Layer Animasi Gift / Poin -->
+        <div id="giftOverlay">
+            <video id="giftVideo" autoplay muted></video>
+        </div>
+
+        <!-- Kolom Kanan (4 Kotak) -->
+        <div class="column">
+            <div class="box" id="slot-4"><div class="placeholder-content"><span class="plus-icon">+</span><span class="label">Permintaan</span></div><video class="host-video" autoplay loop muted></video><div class="info-overlay"><div class="host-name"></div><div class="points-badge">0 Poin</div></div></div>
+            <div class="box" id="slot-5"><div class="placeholder-content"><span class="plus-icon">+</span><span class="label">Permintaan</span></div><video class="host-video" autoplay loop muted></video><div class="info-overlay"><div class="host-name"></div><div class="points-badge">0 Poin</div></div></div>
+            <div class="box" id="slot-6"><div class="placeholder-content"><span class="plus-icon">+</span><span class="label">Permintaan</span></div><video class="host-video" autoplay loop muted></video><div class="info-overlay"><div class="host-name"></div><div class="points-badge">0 Poin</div></div></div>
+            <div class="box" id="slot-7"><div class="placeholder-content"><span class="plus-icon">+</span><span class="label">Permintaan</span></div><video class="host-video" autoplay loop muted></video><div class="info-overlay"><div class="host-name"></div><div class="points-badge">0 Poin</div></div></div>
+        </div>
+    </div>
+
+    <script>
+        const channel = new BroadcastChannel('live_stream_control');
+        
+        // Simpan data poin tiap host
+        const hostData = Array(8).fill(null).map(() => ({ name: '', points: 0 }));
+
+        channel.onmessage = (event) => {
+            const { type, data } = event.data;
+
+            if (type === 'UPDATE_HOST') {
+                const { slotIndex, name, videoSrc } = data;
+                const slotEl = document.getElementById(`slot-${slotIndex}`);
+                
+                if (slotEl) {
+                    const videoEl = slotEl.querySelector('.host-video');
+                    const infoOverlay = slotEl.querySelector('.info-overlay');
+                    const nameEl = slotEl.querySelector('.host-name');
+                    const placeholder = slotEl.querySelector('.placeholder-content');
+
+                    if (name) {
+                        hostData[slotIndex].name = name;
+                        nameEl.innerText = name;
+                    }
+
+                    if (videoSrc) {
+                        videoEl.src = videoSrc;
+                        videoEl.play();
+                    }
+
+                    placeholder.style.display = 'none';
+                    infoOverlay.style.display = 'block';
+                }
+            } 
+            else if (type === 'TRIGGER_GIFT') {
+                const { targetUsername, points, animSrc } = data;
+
+                // Cari slot host berdasarkan Username Target
+                const targetIndex = hostData.findIndex(h => h.name.toLowerCase() === targetUsername.toLowerCase());
+
+                if (targetIndex !== -1) {
+                    // Tambahkan Poin
+                    hostData[targetIndex].points += points;
+                    const pointsBadge = document.querySelector(`#slot-${targetIndex} .points-badge`);
+                    if (pointsBadge) {
+                        pointsBadge.innerText = `${hostData[targetIndex].points} Poin`;
+                    }
+                } else {
+                    console.log('Username target tidak ditemukan di daftar host');
+                }
+
+                // Putar Animasi Gift jika ada
+                if (animSrc) {
+                    const giftVideo = document.getElementById('giftVideo');
+                    giftVideo.src = animSrc;
+                    giftVideo.style.display = 'block';
+                    giftVideo.play();
+
+                    giftVideo.onended = () => {
+                        giftVideo.style.display = 'none';
+                        giftVideo.src = '';
+                    };
+                }
+            }
+        };
+    </script>
+</body>
+</html>
